@@ -6,6 +6,7 @@ source("R/summary.R", encoding = "UTF-8")
 source("R/plots.R", encoding = "UTF-8")
 source("R/segments.R", encoding = "UTF-8")
 source("R/heart_zones.R", encoding = "UTF-8")
+source("R/data_preview.R", encoding = "UTF-8")
 
 ui <- fluidPage(
   titlePanel("Rowerowe Statystyki"),
@@ -51,10 +52,9 @@ ui <- fluidPage(
               "Dane",
               h3("Informacje o pliku"),
               verbatimTextOutput("file_info"),
-              h4("Dostępne kolumny"),
-              verbatimTextOutput("column_names"),
-              h4("Podgląd danych"),
-              tableOutput("data_preview")
+              h4("Podgląd najważniejszych danych"),
+              p("Tabela pokazuje najważniejsze pomiary zapisane podczas aktywności."),
+              DT::DTOutput("data_preview")
             ),
             tabPanel(
               "Wykresy",
@@ -230,13 +230,36 @@ server <- function(input, output, session) {
     )
   })
 
-  output$column_names <- renderPrint({
-    names(activity_data())
-  })
+  output$data_preview <- DT::renderDT({
+    preview <- activity_preview_data(activity_data())
+    table <- DT::datatable(
+      preview,
+      rownames = FALSE,
+      options = list(
+        pageLength = 10,
+        lengthMenu = c(10, 25, 50),
+        scrollX = TRUE,
+        autoWidth = TRUE
+      )
+    )
 
-  output$data_preview <- renderTable({
-    utils::head(activity_data(), 10L)
-  }, striped = TRUE, bordered = TRUE, spacing = "s")
+    rounding <- c(
+      `Dystans [km]` = 3,
+      `Prędkość [km/h]` = 1,
+      `Tętno [bpm]` = 0,
+      `Kadencja [rpm]` = 0,
+      `Moc [W]` = 0,
+      `Wysokość [m]` = 1,
+      `Nachylenie [%]` = 1,
+      `Temperatura [°C]` = 0
+    )
+
+    for (column in intersect(names(rounding), names(preview))) {
+      table <- DT::formatRound(table, column, digits = rounding[[column]])
+    }
+
+    table
+  }, server = TRUE)
 
   output$activity_summary <- renderTable({
     summary_as_data_frame(activity_summary())

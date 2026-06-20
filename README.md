@@ -39,6 +39,7 @@ Najważniejsze moduły w katalogu `R/`:
 - `plots.R` — wykresy i mapa,
 - `segments.R` — segmentacja aktywności,
 - `heart_zones.R` — strefy tętna,
+- `data_preview.R` — czytelny podgląd najważniejszych pomiarów,
 - `mock_data.R` — sztuczne dane do testów.
 
 ## Wymagania
