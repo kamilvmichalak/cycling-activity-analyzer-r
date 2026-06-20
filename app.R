@@ -1,5 +1,7 @@
 library(shiny)
 
+source("R/import_fit.R", encoding = "UTF-8")
+
 ui <- fluidPage(
   titlePanel("Analizator aktywności rowerowych"),
   sidebarLayout(
@@ -13,7 +15,15 @@ ui <- fluidPage(
     ),
     mainPanel(
       h3("Informacje o pliku"),
-      verbatimTextOutput("file_info")
+      verbatimTextOutput("file_info"),
+      hr(),
+      h3("Import danych"),
+      uiOutput("import_status"),
+      textOutput("record_count"),
+      h4("Dostępne kolumny"),
+      verbatimTextOutput("column_names"),
+      h4("Podgląd danych"),
+      tableOutput("data_preview")
     )
   )
 )
@@ -71,6 +81,56 @@ server <- function(input, output, session) {
       check.names = FALSE
     )
   })
+
+  activity_import <- reactive({
+    req(input$fit_file)
+    req(file_validation()$valid)
+
+    tryCatch(
+      list(
+        data = read_fit_activity(input$fit_file$datapath),
+        error = NULL
+      ),
+      error = function(error) {
+        list(data = NULL, error = conditionMessage(error))
+      }
+    )
+  })
+
+  activity_raw <- reactive({
+    result <- activity_import()
+    validate(need(is.null(result$error), result$error))
+    result$data
+  })
+
+  output$import_status <- renderUI({
+    if (is.null(input$fit_file) || !file_validation()$valid) {
+      return(tags$div(
+        class = "alert alert-info",
+        "Dane zostaną wczytane po wybraniu poprawnego pliku FIT."
+      ))
+    }
+
+    result <- activity_import()
+    if (!is.null(result$error)) {
+      return(tags$div(class = "alert alert-danger", result$error))
+    }
+
+    tags$div(class = "alert alert-success", "Dane zostały wczytane do data.frame.")
+  })
+
+  output$record_count <- renderText({
+    data <- activity_raw()
+    paste("Liczba rekordów:", nrow(data))
+  })
+
+  output$column_names <- renderPrint({
+    names(activity_raw())
+  })
+
+  output$data_preview <- renderTable({
+    utils::head(activity_raw(), 10L)
+  }, striped = TRUE, bordered = TRUE, spacing = "s")
 }
 
 shinyApp(ui = ui, server = server)
