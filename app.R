@@ -6,6 +6,7 @@ source("R/summary.R", encoding = "UTF-8")
 source("R/plots.R", encoding = "UTF-8")
 source("R/segments.R", encoding = "UTF-8")
 source("R/heart_zones.R", encoding = "UTF-8")
+source("R/report.R", encoding = "UTF-8")
 
 ui <- fluidPage(
   titlePanel("Analizator aktywności rowerowych"),
@@ -32,7 +33,8 @@ ui <- fluidPage(
         min = 100,
         max = 230,
         step = 1
-      )
+      ),
+      uiOutput("report_download_ui")
     ),
     mainPanel(
       fluidRow(
@@ -302,6 +304,32 @@ server <- function(input, output, session) {
   output$heart_zones_plot <- renderPlot({
     plot_heart_rate_zones(heart_rate_zones())
   })
+
+  output$report_download_ui <- renderUI({
+    if (is.null(input$fit_file) || !file_validation()$valid) {
+      return(NULL)
+    }
+
+    result <- activity_import()
+    if (!is.null(result$error)) {
+      return(NULL)
+    }
+
+    downloadButton("download_report", "Pobierz raport HTML", class = "btn-primary")
+  })
+
+  output$download_report <- downloadHandler(
+    filename = function() {
+      paste0("raport_aktywnosci_", Sys.Date(), ".html")
+    },
+    content = function(file) {
+      generate_activity_report(
+        activity_data(),
+        output_file = file,
+        max_hr = input$max_hr
+      )
+    }
+  )
 }
 
 shinyApp(ui = ui, server = server)

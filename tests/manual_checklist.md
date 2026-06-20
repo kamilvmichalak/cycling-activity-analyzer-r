@@ -7,4 +7,8 @@
 - [ ] Bez wybranego pliku aplikacja pokazuje instrukcję dla użytkownika.
 - [ ] Plik bez GPS, tętna, wysokości, mocy lub kadencji nie zatrzymuje aplikacji.
 - [ ] Wykresy i tabele informują o braku wymaganych danych.
+- [ ] Mapa pojawia się dla aktywności zawierającej współrzędne GPS.
+- [ ] Segmentacja działa dla dystansu oraz czasu.
+- [ ] Zmiana HRmax przelicza strefy tętna.
 - [ ] Raport HTML można wygenerować z poziomu aplikacji.
+- [ ] `source("tests/smoke_test.R")` kończy się komunikatem powodzenia.
