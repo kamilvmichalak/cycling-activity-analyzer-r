@@ -1,0 +1,153 @@
+---
+title: "Raport aktywności rowerowej"
+date: "`r format(Sys.time(), '%Y-%m-%d %H:%M')`"
+output:
+  html_document:
+    toc: true
+    toc_float: true
+    theme: flatly
+params:
+  activity_data: !r data.frame()
+  max_hr: 190
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE, warning = FALSE, message = FALSE)
+
+activity_data <- params$activity_data
+activity_summary <- summarise_activity(activity_data)
+activity_segments <- tryCatch(
+  create_activity_segments(activity_data, by = "distance", segment_length = 1),
+  error = function(error) data.frame()
+)
+heart_rate_zones <- calculate_heart_rate_zones(activity_data, params$max_hr)
+```
+
+# Podstawowe podsumowanie
+
+```{r summary-table}
+knitr::kable(
+  summary_as_data_frame(activity_summary),
+  align = c("l", "r")
+)
+```
+
+# Jakość danych
+
+```{r data-quality}
+has_values <- function(column) {
+  column %in% names(activity_data) && any(!is.na(activity_data[[column]]))
+}
+
+quality <- data.frame(
+  Informacja = c(
+    "Liczba rekordów", "Zakres czasu", "GPS", "Tętno",
+    "Wysokość", "Moc", "Kadencja"
+  ),
+  Wartość = c(
+    nrow(activity_data),
+    paste(
+      format(activity_summary$start_time, "%Y-%m-%d %H:%M:%S"),
+      "–",
+      format(activity_summary$end_time, "%Y-%m-%d %H:%M:%S")
+    ),
+    if (isTRUE(activity_summary$has_gps)) "dostępny" else "brak",
+    if (has_values("heart_rate")) "dostępne" else "brak",
+    if (has_values("altitude")) "dostępna" else "brak",
+    if (has_values("power")) "dostępna" else "brak",
+    if (has_values("cadence")) "dostępna" else "brak"
+  ),
+  check.names = FALSE
+)
+
+knitr::kable(quality, align = c("l", "r"))
+```
+
+# Prędkość
+
+```{r speed-plot, fig.height=4, fig.width=9}
+plot_speed(activity_data)
+```
+
+# Tętno
+
+```{r heart-rate-plot, fig.height=4, fig.width=9}
+plot_heart_rate(activity_data)
+```
+
+# Profil wysokości
+
+```{r altitude-plot, fig.height=4, fig.width=9}
+plot_altitude(activity_data)
+```
+
+# Ślad GPS
+
+```{r route-plot, fig.height=6, fig.width=8}
+plot_route(activity_data)
+```
+
+# Segmenty
+
+```{r segments}
+if (nrow(activity_segments) > 0L) {
+  print(knitr::kable(segments_as_data_frame(activity_segments)))
+  print(plot_segments_speed(activity_segments))
+} else {
+  cat("Brak danych wymaganych do utworzenia segmentów.")
+}
+```
+
+# Strefy tętna
+
+```{r heart-rate-zones}
+if (nrow(heart_rate_zones) > 0L) {
+  print(knitr::kable(heart_zones_as_data_frame(heart_rate_zones)))
+  print(plot_heart_rate_zones(heart_rate_zones))
+} else {
+  cat("Brak danych tętna w aktywności.")
+}
+```
+
+# Wnioski
+
+```{r conclusions, results='asis'}
+conclusions <- character()
+
+if (is.finite(activity_summary$distance_km)) {
+  conclusions <- c(
+    conclusions,
+    sprintf("- Pokonany dystans wyniósł **%.2f km**.", activity_summary$distance_km)
+  )
+}
+
+if (is.finite(activity_summary$average_speed_kmh)) {
+  conclusions <- c(
+    conclusions,
+    sprintf(
+      "- Średnia prędkość podczas ruchu wyniosła **%.1f km/h**.",
+      activity_summary$average_speed_kmh
+    )
+  )
+}
+
+if (is.finite(activity_summary$total_ascent_m)) {
+  conclusions <- c(
+    conclusions,
+    sprintf("- Łączna suma podjazdów wyniosła około **%.0f m**.", activity_summary$total_ascent_m)
+  )
+}
+
+if (is.finite(activity_summary$average_heart_rate)) {
+  conclusions <- c(
+    conclusions,
+    sprintf("- Średnie tętno wyniosło **%.0f bpm**.", activity_summary$average_heart_rate)
+  )
+}
+
+if (length(conclusions) == 0L) {
+  conclusions <- "- Dane nie wystarczają do wygenerowania wniosków liczbowych."
+}
+
+cat(paste(conclusions, collapse = "\n"))
+```
