@@ -9,7 +9,7 @@ source("R/heart_zones.R", encoding = "UTF-8")
 source("R/report.R", encoding = "UTF-8")
 
 ui <- fluidPage(
-  titlePanel("Analizator aktywności rowerowych"),
+  titlePanel("Rowerowe Statystyki"),
   sidebarLayout(
     sidebarPanel(
       fileInput(
