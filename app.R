@@ -2,6 +2,7 @@ library(shiny)
 
 source("R/import_fit.R", encoding = "UTF-8")
 source("R/prepare_data.R", encoding = "UTF-8")
+source("R/summary.R", encoding = "UTF-8")
 
 ui <- fluidPage(
   titlePanel("Analizator aktywności rowerowych"),
@@ -21,6 +22,8 @@ ui <- fluidPage(
       h3("Import danych"),
       uiOutput("import_status"),
       textOutput("record_count"),
+      h3("Podsumowanie aktywności"),
+      tableOutput("activity_summary"),
       h4("Dostępne kolumny"),
       verbatimTextOutput("column_names"),
       h4("Podgląd danych"),
@@ -108,6 +111,10 @@ server <- function(input, output, session) {
     prepare_activity_data(activity_raw())
   })
 
+  activity_summary <- reactive({
+    summarise_activity(activity_data())
+  })
+
   output$import_status <- renderUI({
     if (is.null(input$fit_file) || !file_validation()$valid) {
       return(tags$div(
@@ -137,6 +144,10 @@ server <- function(input, output, session) {
 
   output$data_preview <- renderTable({
     utils::head(activity_data(), 10L)
+  }, striped = TRUE, bordered = TRUE, spacing = "s")
+
+  output$activity_summary <- renderTable({
+    summary_as_data_frame(activity_summary())
   }, striped = TRUE, bordered = TRUE, spacing = "s")
 }
 
