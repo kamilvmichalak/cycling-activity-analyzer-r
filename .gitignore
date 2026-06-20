@@ -1,0 +1,24 @@
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+renv/library/
+
+# Dane użytkownika
+data/raw/*
+!data/raw/.gitkeep
+data/processed/*
+!data/processed/.gitkeep
+*.fit
+*.FIT
+
+# Wygenerowane raporty
+reports/generated/*
+!reports/generated/.gitkeep
+*.html
+*.pdf
+*.docx
+
+# Pliki systemowe
+.DS_Store
+Thumbs.db
