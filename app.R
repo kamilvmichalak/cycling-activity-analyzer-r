@@ -5,6 +5,7 @@ source("R/prepare_data.R", encoding = "UTF-8")
 source("R/summary.R", encoding = "UTF-8")
 source("R/plots.R", encoding = "UTF-8")
 source("R/segments.R", encoding = "UTF-8")
+source("R/heart_zones.R", encoding = "UTF-8")
 
 ui <- fluidPage(
   titlePanel("Analizator aktywności rowerowych"),
@@ -22,7 +23,16 @@ ui <- fluidPage(
         "Segmentacja",
         choices = c("Dystans" = "distance", "Czas" = "time")
       ),
-      uiOutput("segment_length_control")
+      uiOutput("segment_length_control"),
+      hr(),
+      numericInput(
+        "max_hr",
+        "Tętno maksymalne",
+        value = 190,
+        min = 100,
+        max = 230,
+        step = 1
+      )
     ),
     mainPanel(
       fluidRow(
@@ -58,6 +68,13 @@ ui <- fluidPage(
               h3("Analiza segmentów"),
               tableOutput("segments_table"),
               plotOutput("segments_plot", height = "360px")
+            ),
+            tabPanel(
+              "Strefy tętna",
+              h3("Strefy tętna"),
+              uiOutput("heart_zones_status"),
+              tableOutput("heart_zones_table"),
+              plotOutput("heart_zones_plot", height = "360px")
             )
           )
         ),
@@ -186,6 +203,10 @@ server <- function(input, output, session) {
     )
   })
 
+  heart_rate_zones <- reactive({
+    calculate_heart_rate_zones(activity_data(), max_hr = input$max_hr)
+  })
+
   output$import_status <- renderUI({
     if (is.null(input$fit_file) || !file_validation()$valid) {
       return(tags$div(
@@ -261,6 +282,25 @@ server <- function(input, output, session) {
 
   output$segments_plot <- renderPlot({
     plot_segments_speed(activity_segments())
+  })
+
+  output$heart_zones_status <- renderUI({
+    if (nrow(heart_rate_zones()) == 0L) {
+      return(tags$div(
+        class = "alert alert-warning",
+        "Brak danych tętna w aktywności."
+      ))
+    }
+
+    tags$p("Strefy wyliczono na podstawie podanego tętna maksymalnego.")
+  })
+
+  output$heart_zones_table <- renderTable({
+    heart_zones_as_data_frame(heart_rate_zones())
+  }, striped = TRUE, bordered = TRUE, spacing = "s")
+
+  output$heart_zones_plot <- renderPlot({
+    plot_heart_rate_zones(heart_rate_zones())
   })
 }
 
