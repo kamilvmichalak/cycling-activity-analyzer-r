@@ -4,7 +4,7 @@
 
 Cycling Activity Analyzer R to lokalna aplikacja Shiny do analizy aktywności rowerowych zapisanych w plikach FIT. Po wskazaniu pliku aplikacja importuje rekordy do `data.frame`, przygotowuje dane i udostępnia podsumowanie treningu, wykresy, mapę trasy, segmenty oraz strefy tętna.
 
-Plik użytkownika jest przetwarzany lokalnie. Repozytorium nie przechowuje prywatnych aktywności ani wygenerowanych raportów.
+Plik użytkownika jest przetwarzany lokalnie. Repozytorium nie przechowuje prywatnych aktywności.
 
 ## Funkcjonalności
 
@@ -16,8 +16,7 @@ Plik użytkownika jest przetwarzany lokalnie. Repozytorium nie przechowuje prywa
 - wykresy prędkości, tętna, wysokości i śladu GPS,
 - interaktywna mapa trasy,
 - segmenty dystansowe i czasowe,
-- strefy tętna wyznaczane na podstawie HRmax,
-- generowanie raportu HTML.
+- strefy tętna wyznaczane na podstawie HRmax.
 
 ## Struktura katalogów
 
@@ -28,8 +27,6 @@ cycling-activity-analyzer-r/
 ├── R/                            # funkcje importu i analizy
 ├── data/raw/                     # lokalne dane wejściowe (ignorowane)
 ├── data/processed/               # lokalne dane przetworzone (ignorowane)
-├── reports/activity_report.Rmd   # szablon raportu
-├── reports/generated/            # raporty lokalne (ignorowane)
 ├── tests/manual_checklist.md     # lista testów ręcznych
 └── docs/screenshots/             # miejsce na zrzuty ekranu
 ```
@@ -42,13 +39,12 @@ Najważniejsze moduły w katalogu `R/`:
 - `plots.R` — wykresy i mapa,
 - `segments.R` — segmentacja aktywności,
 - `heart_zones.R` — strefy tętna,
-- `report.R` — generowanie raportu,
 - `mock_data.R` — sztuczne dane do testów.
 
 ## Wymagania
 
 - R w wersji co najmniej 4.1.0,
-- pakiety: `shiny`, `ggplot2`, `dplyr`, `lubridate`, `rmarkdown`, `knitr`, `DT`, `leaflet`,
+- pakiety: `shiny`, `ggplot2`, `dplyr`, `lubridate`, `DT`, `leaflet`,
 - pakiet `FITfileR` instalowany z GitHuba.
 
 ## Instalacja zależności
@@ -58,7 +54,7 @@ W konsoli R wykonaj:
 ```r
 install.packages(c(
   "shiny", "ggplot2", "dplyr", "lubridate",
-  "rmarkdown", "knitr", "DT", "leaflet", "remotes"
+  "DT", "leaflet", "remotes"
 ))
 
 remotes::install_github("grimbough/FITfileR")
@@ -79,7 +75,6 @@ Po uruchomieniu:
 3. Poczekaj na import danych.
 4. Przejdź między zakładkami podsumowania, danych, wykresów, segmentów i stref tętna.
 5. Ustaw długość segmentu oraz własne tętno maksymalne.
-6. Pobierz raport HTML.
 
 ## Dane wejściowe
 
@@ -92,8 +87,7 @@ Prywatne pliki `.fit` są ignorowane przez Git niezależnie od miejsca zapisania
 - nie każdy plik FIT zawiera komplet danych,
 - sposób zapisu pól może zależeć od producenta urządzenia,
 - kafelki interaktywnej mapy wymagają połączenia z internetem; prosty wykres GPS działa bez nich,
-- bardzo duże pliki mogą wymagać dłuższego czasu importu,
-- raport HTML wymaga działającej instalacji pakietu `rmarkdown` i narzędzia Pandoc, które jest dołączone między innymi do RStudio.
+- bardzo duże pliki mogą wymagać dłuższego czasu importu.
 
 Brak GPS, tętna, wysokości, mocy lub kadencji nie powinien zatrzymać aplikacji. Niedostępne wyniki są zastępowane komunikatem dla użytkownika.
 
