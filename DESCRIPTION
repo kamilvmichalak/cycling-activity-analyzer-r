@@ -1,0 +1,24 @@
+Type: Project
+Package: cycling-activity-analyzer-r
+Title: Cycling Activity Analyzer in R
+Version: 0.1.0
+Authors@R: c(
+    person("Kamil", "Michalak", role = c("aut", "cre")),
+    person("Marcin", "Szaroleta", role = "aut"),
+    person("Kacper", "Michałowski", role = "aut")
+  )
+Description: Shiny application and helper functions for analyzing cycling FIT files.
+Encoding: UTF-8
+Depends:
+    R (>= 4.1.0)
+Imports:
+    shiny,
+    ggplot2,
+    dplyr,
+    lubridate,
+    rmarkdown,
+    knitr,
+    DT,
+    leaflet
+Suggests:
+    FITfileR
