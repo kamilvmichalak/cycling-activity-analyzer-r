@@ -4,6 +4,7 @@ source("R/import_fit.R", encoding = "UTF-8")
 source("R/prepare_data.R", encoding = "UTF-8")
 source("R/summary.R", encoding = "UTF-8")
 source("R/plots.R", encoding = "UTF-8")
+source("R/segments.R", encoding = "UTF-8")
 
 ui <- fluidPage(
   titlePanel("Analizator aktywności rowerowych"),
@@ -14,7 +15,14 @@ ui <- fluidPage(
         label = "Wybierz plik aktywności .fit",
         accept = c(".fit", ".FIT")
       ),
-      uiOutput("file_status")
+      uiOutput("file_status"),
+      hr(),
+      selectInput(
+        "segment_by",
+        "Segmentacja",
+        choices = c("Dystans" = "distance", "Czas" = "time")
+      ),
+      uiOutput("segment_length_control")
     ),
     mainPanel(
       fluidRow(
@@ -44,6 +52,12 @@ ui <- fluidPage(
               plotOutput("heart_rate_plot", height = "300px"),
               plotOutput("altitude_plot", height = "300px"),
               plotOutput("route_plot", height = "420px")
+            ),
+            tabPanel(
+              "Segmenty",
+              h3("Analiza segmentów"),
+              tableOutput("segments_table"),
+              plotOutput("segments_plot", height = "360px")
             )
           )
         ),
@@ -143,6 +157,35 @@ server <- function(input, output, session) {
     summarise_activity(activity_data())
   })
 
+  output$segment_length_control <- renderUI({
+    if (identical(input$segment_by, "time")) {
+      numericInput(
+        "segment_length",
+        "Długość segmentu [min]",
+        value = 5,
+        min = 0.5,
+        step = 0.5
+      )
+    } else {
+      numericInput(
+        "segment_length",
+        "Długość segmentu [km]",
+        value = 1,
+        min = 0.1,
+        step = 0.1
+      )
+    }
+  })
+
+  activity_segments <- reactive({
+    req(input$segment_length)
+    create_activity_segments(
+      activity_data(),
+      by = input$segment_by,
+      segment_length = input$segment_length
+    )
+  })
+
   output$import_status <- renderUI({
     if (is.null(input$fit_file) || !file_validation()$valid) {
       return(tags$div(
@@ -210,6 +253,14 @@ server <- function(input, output, session) {
     data <- activity_data()
     validate(need(nrow(route_data(data)) >= 2L, "Brak danych GPS."))
     create_route_map(data)
+  })
+
+  output$segments_table <- renderTable({
+    segments_as_data_frame(activity_segments())
+  }, striped = TRUE, bordered = TRUE, spacing = "s")
+
+  output$segments_plot <- renderPlot({
+    plot_segments_speed(activity_segments())
   })
 }
 
