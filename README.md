@@ -1,0 +1,1 @@
+Projekt w R do analizy aktywności rowerowych na podstawie danych treningowych i śladu GPS.
