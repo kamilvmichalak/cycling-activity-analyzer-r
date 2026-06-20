@@ -12,13 +12,6 @@ data/processed/*
 *.fit
 *.FIT
 
-# Wygenerowane raporty
-reports/generated/*
-!reports/generated/.gitkeep
-*.html
-*.pdf
-*.docx
-
 # Pliki systemowe
 .DS_Store
 Thumbs.db

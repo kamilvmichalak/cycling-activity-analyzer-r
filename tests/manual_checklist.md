@@ -10,5 +10,4 @@
 - [ ] Mapa pojawia się dla aktywności zawierającej współrzędne GPS.
 - [ ] Segmentacja działa dla dystansu oraz czasu.
 - [ ] Zmiana HRmax przelicza strefy tętna.
-- [ ] Raport HTML można wygenerować z poziomu aplikacji.
 - [ ] `source("tests/smoke_test.R")` kończy się komunikatem powodzenia.

@@ -4,7 +4,6 @@ source("R/summary.R", encoding = "UTF-8")
 source("R/plots.R", encoding = "UTF-8")
 source("R/segments.R", encoding = "UTF-8")
 source("R/heart_zones.R", encoding = "UTF-8")
-source("R/report.R", encoding = "UTF-8")
 source("R/mock_data.R", encoding = "UTF-8")
 
 raw_data <- create_mock_activity_data(n = 1000)
