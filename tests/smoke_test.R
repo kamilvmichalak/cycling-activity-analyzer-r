@@ -22,6 +22,8 @@ time_segments <- create_activity_segments(
 )
 heart_rate_zones <- calculate_heart_rate_zones(activity_data, max_hr = 190)
 preview_data <- activity_preview_data(activity_data)
+altitude_plot <- plot_altitude(activity_data)
+altitude_axis_range <- ggplot2::ggplot_build(altitude_plot)$layout$panel_params[[1]]$y.range
 
 stopifnot(
   is.data.frame(activity_data),
@@ -34,7 +36,8 @@ stopifnot(
   abs(sum(heart_rate_zones$percentage) - 100) < 0.01,
   nrow(preview_data) == 1000L,
   "Data i czas" %in% names(preview_data),
-  !"left_right_balance" %in% names(preview_data)
+  !"left_right_balance" %in% names(preview_data),
+  abs(max(altitude_axis_range) - max(activity_data$altitude, na.rm = TRUE)) < 0.001
 )
 
 message("Test dymny zakończony powodzeniem.")

@@ -59,15 +59,24 @@ plot_altitude <- function(df) {
   axis <- activity_axis(df)
   plot_data <- data.frame(x = axis$values, altitude = as.numeric(df$altitude))
   plot_data <- plot_data[is.finite(plot_data$x) & is.finite(plot_data$altitude), ]
+  altitude_limits <- c(
+    min(0, min(plot_data$altitude)),
+    max(plot_data$altitude)
+  )
+
+  if (diff(altitude_limits) == 0) {
+    altitude_limits <- altitude_limits + c(-1, 1)
+  }
 
   ggplot2::ggplot(plot_data, ggplot2::aes(x = x, y = altitude)) +
-    ggplot2::geom_area(fill = "#86EFAC", alpha = 0.55) +
+    ggplot2::geom_area(fill = "#86EFAC", alpha = 0.55, position = "identity") +
     ggplot2::geom_line(color = "#15803D", linewidth = 0.5) +
     ggplot2::labs(
       title = "Profil wysokości",
       x = axis$label,
       y = "Wysokość [m]"
     ) +
+    ggplot2::coord_cartesian(ylim = altitude_limits, expand = FALSE) +
     ggplot2::theme_minimal(base_size = 12)
 }
 
